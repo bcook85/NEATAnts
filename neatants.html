@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>NEAT Ants</title>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no"/>
+		<meta name="mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<style>
+			body {
+				text-align: center;
+				background-color: #222;
+				padding: 0;
+				margin: 0;
+				font-family: monospace;
+			}
+			canvas {
+				image-rendering: auto; 
+				image-rendering: crisp-edges;
+				image-rendering: pixelated;
+				padding: 0;
+				margin: 0;
+			}
+			span {
+				position: fixed;
+				left: 0;
+				top: 0;
+				background-color: black;
+				color: white;
+				font-size: 1em;
+				text-align: left;
+				padding: 0;
+				margin: 0;
+			}
+		</style>
+	</head>
+	<body>
+		<span id="info"></span>
+		<canvas id="screen"></canvas>
+		<script type="text/javascript" src="brain.js"></script>
+		<script type="text/javascript" src="neatants.js"></script>
+	</body>
+</html>
