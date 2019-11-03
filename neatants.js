@@ -13,8 +13,8 @@ Global Variables
 //Grid
 const tileSize = 10;
 const tileSize2 = Math.floor(tileSize * 0.5);
-const gridWidth = 100;
-const gridHeight = 100;
+const gridWidth = 64;
+const gridHeight = 64;
 var grid = [];
 
 //Tiles
@@ -37,18 +37,18 @@ var INFO = document.getElementById("info");
 
 //Colony & Ants
 var ants = [];
-const colonyX = Math.floor((gridWidth * 0.25) + (Math.random() * (gridWidth * 0.5)));
+const colonyX = Math.floor(gridWidth * 0.5);//Math.floor((gridWidth * 0.25) + (Math.random() * (gridWidth * 0.5)));
 const colonyXPixels = (colonyX * tileSize) + tileSize2;
-const colonyY = Math.floor((gridHeight * 0.25) + (Math.random() * (gridHeight * 0.5)));
+const colonyY = Math.floor(gridHeight * 0.5);//Math.floor((gridHeight * 0.25) + (Math.random() * (gridHeight * 0.5)));
 const colonyYPixels = (colonyY * tileSize) + tileSize2;
 const minColonyDistance = 5;
 var colonyFood = 0;
 const turnSpeed = 1;
 const moveSpeed = 0.5;
-const antSize = 4;
-const colonySize = 6;
+const antSize = 3;
+const colonySize = 4;
 const antAgeAmount = 0.0005;
-const antCarryingSize = 3;
+const antCarryingSize = 2;
 var highestGeneration = 1;
 
 /*******************************************************************************
@@ -376,7 +376,7 @@ function DrawAnts() {
 }
 
 function UpdateUI() {
-	INFO.innerHTML = "HGen: " + highestGeneration + "<br>Food: " + colonyFood;
+	INFO.innerHTML = "G: " + highestGeneration + "<br>F: " + colonyFood;
 }
 
 /*******************************************************************************
