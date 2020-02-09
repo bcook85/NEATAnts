@@ -1,16 +1,10 @@
-/*
-	Based on the neural network created by Daniel Shiffman
-	from the YouTube channel, The Coding Train.
-	Channel: https://www.youtube.com/user/shiffman/featured
-	NEAT Playlist: https://www.youtube.com/user/shiffman/playlists?view=50&sort=dd&shelf_id=16
-*/
-
 /******************************************************************************
 Brain (Neural Network)
 ******************************************************************************/
 
 const brainMutationRate = 0.075;
 const brainMutationAmount = 0.05;
+const startScore = 1;
 
 class Brain {
 	constructor(inputCount, hiddenCount, outputCount) {
@@ -21,7 +15,7 @@ class Brain {
 		this.weightsOutput = new Matrix(this.outputNodes, this.hiddenNodes);
 		this.biasHidden = new Matrix(this.hiddenNodes, 1);
 		this.biasOutput = new Matrix(this.outputNodes, 1);
-		this.score = 1;
+		this.score = startScore;
 		this.fitness = 0;
 	};
 	predict(inputArray) {
@@ -44,9 +38,14 @@ class Brain {
 				let chance = Math.random();
 				if (chance < brainMutationRate * 0.01) {
 					//critical mutation
-					layer.data[y][x] = Math.random();
+					layer.data[y][x] = (Math.random() * 2) - 1;
 				} else if (Math.random() < brainMutationRate) {
 					layer.data[y][x] += Math.random() > 0.5 ? brainMutationAmount : -brainMutationAmount;
+					if (layer.data[y][x] < -1) {
+						layer.data[y][x] = -1;
+					} else if (layer.data[y][x] > 1) {
+						layer.data[y][x] = 1;
+					}
 				}
 			}
 		}
@@ -104,22 +103,40 @@ class Brain {
 	};
 	static reproduce(population) {
 		Brain.calculateFitness(population);
-		let newBrain = Brain.crossover(Brain.pickOne(population), Brain.pickOne(population));
+		let first = Brain.pickOne(population);
+		let second = first;
+		while (second == first) {
+			second = Brain.pickOne(population);
+		}
+		let newBrain = Brain.crossover(population[first], population[second]);
 		Brain.mutate(newBrain);
-		newBrain.score = 1;
+		newBrain.score = startScore;
 		return newBrain;
 	};
+	static sortPopulation(population) {
+		let sorted = [];
+		for (let i = 0; i < population.length; i++) {
+			let found = false;
+			for (let j = sorted.length - 1; j >= 0; j--) {
+				if (population[i].score <= sorted[j].score) {
+					sorted.splice(j + 1, 0, population[i]);
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				sorted.unshift(population[i]);
+			}
+		}
+		population = sorted;
+	}
 	static calculateFitness(population) {
 		let sum = 0;
 		for (let i = 0; i < population.length; i++) {
 			sum += population[i].score;
 		}
 		for (let i = 0; i < population.length; i++) {
-			if (sum <= 0) {
-				population[i].fitness = 1 / population.length;
-			} else {
-				population[i].fitness = population[i].score / sum;
-			}
+			population[i].fitness = population[i].score / sum;
 		}
 	};
 	static pickOne(population) {
@@ -130,7 +147,11 @@ class Brain {
 			index += 1;
 		}
 		index -= 1;
-		return population[index];
+		// return population[index];
+		return index;
+	};
+	static pickTop(pLength, percent) {
+		return Math.floor(Math.random() * Math.floor(pLength * percent));
 	};
 };
 

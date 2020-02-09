@@ -32,6 +32,7 @@ var loopID = 0;
 const twoPI = Math.PI * 2;
 const halfPI = Math.PI * 0.5;
 const sixthPI = Math.PI / 6;
+const thirdPI = Math.PI / 3;
 const quarterPI = Math.PI * 0.25;
 var INFO = document.getElementById("info");
 
@@ -50,6 +51,7 @@ const colonySize = 4;
 const antAgeAmount = 0.0005;
 const antCarryingSize = 2;
 var highestGeneration = 1;
+const antColors = ["#FF0000", "#FF004D", "#FF0099", "#FF00E6", "#CC00FF", "#8000FF", "#3300FF", "#001AFF", "#0066FF", "#00B3FF", "#00FFFF"];
 
 /*******************************************************************************
 Canvas Setup
@@ -117,6 +119,7 @@ function InitGrid() {
 	}
 	//Colony
 	grid[colonyX][colonyY].type = tileColony;
+	grid[colonyX][colonyY].strength = 1;
 	//Food
 	for (let i = 0; i < foodCount; i++) {
 		SetRandomTile(tileFood, 1);
@@ -127,7 +130,10 @@ function InitGrid() {
 	}
 }
 
-function BuildAnt() {
+function BuildAnt(brain) {
+	if (!brain) {
+		brain = new Brain(16, 16, 3);
+	}
 	return {
 		"x": colonyXPixels
 		,"y": colonyYPixels
@@ -137,12 +143,12 @@ function BuildAnt() {
 		,"alive": true
 		,"hasFood": 0
 		,"age": 0
-		,"brain": new Brain(14, 14, 3)
+		,"brain": brain
 		,"desireTurn": 0
 		,"desireMove": 0
 		,"desireStrength": 0
 		,"generation": 1
-		,"facing": 0
+		,"gathered": 0
 	};
 }
 
@@ -171,21 +177,21 @@ function VisionPoints(a) {
 			}
 		}
 	}
+	// Current Tile
+	vision.push(grid[a.tx][a.ty].type);
+	vision.push(grid[a.tx][a.ty].strength);
 	return vision;
 }
 
 function GetInputs(a) {
-	let inputs = VisionPoints(a);//12 inputs
+	let inputs = VisionPoints(a);//14 inputs
 	// Has Food
-	inputs.push(a.hasFood);//13
-	// Facing Colony
-	let colDir = Math.atan2(colonyYPixels - a.y, colonyXPixels - a.x) - a.dir;
-	if (colDir >= -quarterPI && colDir <= quarterPI) {
-		a.facing = 1;
-	} else {
-		a.facing = 0;
-	}
-	inputs.push(a.facing);//14
+	inputs.push(a.hasFood);//15
+	let colDir = Math.atan2(colonyYPixels - a.y, colonyXPixels - a.x);
+	colDir = (colDir + twoPI) % twoPI;//0-twoPI
+	colDir -= a.dir;//normalize to ant's dir
+	colDir = (colDir + twoPI) % twoPI;//0-twoPI
+	inputs.push(colDir / twoPI);//16
 	return inputs;
 }
 
@@ -270,6 +276,10 @@ function AntInteract(a) {
 		if (a.tx == colonyX && a.ty == colonyY) {
 			colonyFood += 1;
 			a.brain.score += 20;
+			a.gathered += 1;
+			if (a.gathered >= antColors.length) {
+				a.gathered = antColors.length - 1;
+			}
 			a.hasFood = 0;
 			a.age = 0;
 			UpdateUI();
@@ -293,8 +303,7 @@ function AntRespawn(a) {
 	let newBrain = Brain.reproduce(currentBrains);
 	currentBrains = [];
 	let gen = a.generation + 1;
-	let newAnt = BuildAnt();
-	newAnt.brain = newBrain;
+	let newAnt = BuildAnt(newBrain);
 	newAnt.generation = gen;
 	if (gen > highestGeneration) {
 		highestGeneration = gen;
@@ -353,7 +362,7 @@ function DrawGrid() {
 function DrawAnts() {
 	for (let i = 0; i < ants.length; i++) {
 		if (ants[i].alive) {
-			ctx.fillStyle = "rgba(255,0,0,1)";
+			ctx.fillStyle = antColors[ants[i].gathered];
 			ctx.beginPath();
 			ctx.arc(Math.floor(ants[i].x), Math.floor(ants[i].y), antSize, 0, twoPI);
 			ctx.fill();
@@ -375,8 +384,14 @@ function DrawAnts() {
 	ctx.fill();
 }
 
+function DrawBrain(b) {
+	//draw circles for each perceptron
+	//draw lines between them
+	//use alpha or differing colors to show strength
+}
+
 function UpdateUI() {
-	INFO.innerHTML = "G: " + highestGeneration + "<br>F: " + colonyFood;
+	INFO.innerHTML = "Generation: " + highestGeneration + "<br>Collected: " + colonyFood;
 }
 
 /*******************************************************************************
